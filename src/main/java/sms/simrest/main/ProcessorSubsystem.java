@@ -10,7 +10,7 @@ public class ProcessorSubsystem {
 	    Sim_system.initialise();
 	    Sim_system.set_trace_detail(false, true, false);
 	    
-	    Source source = new Source("Source", 150.45);
+	    Source source = new Source("Source", 0.19674, 86757.0); //não sei se ta certo
 	    Processor processor = new Processor("Processor", 110.5, 90.5);
 	    Disk disk1 = new Disk("Disk1", 130.0, 65.0);
 	    Disk disk2 = new Disk("Disk2", 350.5, 200.5);
