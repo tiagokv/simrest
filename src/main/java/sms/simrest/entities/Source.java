@@ -16,15 +16,18 @@ public class Source extends Sim_entity {
       // Port for sending events to the processor
       out = new Sim_port("Out");
       add_port(out);
+      
       delay = new Sim_gamma_obj("arrival", scale, shape);
-      add_generator(delay);
       random = new Sim_random_obj("random");
+      
+      add_generator(delay);
+      add_generator(random);
     }
 
     public void body() {
       for (int i=0; i < 10; i++) {
     	  
-    	Customer customer = new Customer();
+    	Customer customer = new Customer(i);
     	
     	double sample = random.sample();
     	
@@ -33,8 +36,7 @@ public class Source extends Sim_entity {
     	} else {
     		customer.isTicket = false;
     	}
-    	
-    	
+    	sim_trace(1, "Customer " + customer.id + " will pay with " + (customer.isTicket? "Ticket": "Machine" ));
         // Send the processor a job
         sim_schedule(out, 0.0, 0, customer);
         // Pause
