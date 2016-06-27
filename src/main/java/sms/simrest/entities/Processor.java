@@ -1,8 +1,11 @@
 package sms.simrest.entities;
 
+import java.util.ArrayList;
+
 import eduni.simjava.Sim_entity;
 import eduni.simjava.Sim_event;
 import eduni.simjava.Sim_port;
+import eduni.simjava.Sim_predicate;
 import eduni.simjava.Sim_stat;
 import eduni.simjava.Sim_system;
 import eduni.simjava.distributions.Sim_normal_obj;
@@ -10,55 +13,112 @@ import eduni.simjava.distributions.Sim_random_obj;
 
 //The class for the processor
 public class Processor extends Sim_entity {
-  private Sim_port in, out1, out2;
+  private Sim_port in;
   private Sim_normal_obj delay;
-  private Sim_random_obj prob;
-  private Sim_stat stat;
 
-  public Processor(String name, double mean, double var) {
+  private ArrayList<PaymMachineConnection> portMachines;
+  
+  public final static String PREFIX_IN_MACHINE = "In_PaymMachine";
+  public final static String PREFIX_OUT_MACHINE = "Out_PaymMachine";
+  
+  public class PaymMachineConnection{
+	  public int id;
+	  public Sim_port out;
+	  public Sim_port in;
+	  public Boolean isAvailable;
+	  
+	  public PaymMachineConnection(int id, Sim_port in, Sim_port out){
+		  this.id = id;
+		  this.out = out;
+		  this.in  = in;
+		  this.isAvailable = true;
+	  }
+  }
+  
+  public Processor(String name, int qttMachines, double mean, double var) {
     super(name);
-    // Port for receiving events from the source
-    in = new Sim_port("In");
-    // Port for sending events to disk 1
-    out1 = new Sim_port("Out1");
-    // Port for sending events to disk 2
-    out2 = new Sim_port("Out2");
+    // Receive Customers from Source
+    in = new Sim_port("InCustomer");
+    
+    portMachines = new ArrayList<PaymMachineConnection>();
+    for (int i = 0; i < qttMachines; i++) {
+    	Sim_port port_in_machine = new Sim_port(PREFIX_IN_MACHINE + i); // Will tell that the machine is available
+		Sim_port port_out_machine = new Sim_port(PREFIX_OUT_MACHINE + i); //Will pass the customer
+		
+		add_port(port_in_machine);
+		add_port(port_out_machine);
+		portMachines.add( new PaymMachineConnection(i, port_in_machine, port_out_machine) );
+	}
+    
+    //Ticket is processed by this class
     add_port(in);
-    add_port(out1);
-    add_port(out2);
-    
-    delay = new Sim_normal_obj("Delay", mean, var);
-    prob = new Sim_random_obj("Probability");
-    add_generator(delay);
-    add_generator(prob);
-    
-    stat = new Sim_stat();
-    stat.add_measure(Sim_stat.THROUGHPUT);
-    stat.add_measure(Sim_stat.RESIDENCE_TIME);
-    set_stat(stat);
-    
+  }
+  
+  public ArrayList<PaymMachineConnection> getPaymMachinePorts(){
+	  return portMachines;
   }
 
   public void body() {
     while (Sim_system.running()) {
       Sim_event e = new Sim_event();
-      // Get the next event
-      sim_get_next(e);
-      // Process the event
-      sim_process(delay.sample());
-      // The event has completed service
-      sim_completed(e);
+
+      //First gather all payment machine responses
+      sim_select( new Sim_predicate() {
+		
+		@Override
+		public boolean match(Sim_event arg0) {
+			return !arg0.from_port(in); //is not a customer
+		}
+      }, e);
       
-      double p = prob.sample();
-      if (p < 0.60) {
-    	sim_trace(1, "Disk1 selected for I/O work.");
-        // Even I/O jobs go to disk 1
-        sim_schedule(out1, 0.0, 1);
-      } else {
-    	sim_trace(1, "Disk2 selected for I/O work.");
-        // Odd I/O jobs go to disk 2
-        sim_schedule(out2, 0.0, 1);
+      //No machine event was found
+      if( e.get_tag() == -1 ){
+          //Simulate priority queue, first Tickets then machine payments
+          sim_select( new Sim_predicate() {
+    		@Override
+    		public boolean match(Sim_event arg0) {
+    			if( arg0.get_data() instanceof Customer ){
+    				return ((Customer)arg0.get_data()).isTicket;
+    			}
+    			
+    			return true;
+    		}
+          }, e);
+          
+          if( e.get_tag() == -1){ //There was no ticket in queue
+        	  sim_get_next(e);
+          }
       }
+      
+      //Is a new customer coming?
+      if( e.from_port(in) && e.get_data() != null && e.get_data() instanceof Customer ){
+    	  Customer cust = (Customer) e.get_data();
+    	  sim_trace(1, "Customer " + cust.id + " uses Ticket? " + cust.isTicket);
+    	  
+    	  if( cust.isTicket ){
+    		  //draw from probability
+    		  sim_pause(0.2);
+    	  }else{
+    		  // Check paym. machines
+    		  for (PaymMachineConnection paymMachineConnection : portMachines) {
+    			  if( paymMachineConnection.isAvailable ){
+    				sim_trace(1,"Customer " + cust.id + " being sent to machine " + paymMachineConnection.id);
+  					sim_schedule(paymMachineConnection.out, 0.0, 0, cust);
+  					paymMachineConnection.isAvailable = false;
+  					break;
+    			  }
+    		  }
+    	  }
+      }else{ //then it´s a signal from the paym. machines stating that they are available
+    	  for (PaymMachineConnection paymMachineConnection : portMachines) {
+			if(e.from_port(paymMachineConnection.in)){ //If comes from this specific machine
+				sim_trace(1, "Signal received from Machine " + paymMachineConnection.id);
+				paymMachineConnection.isAvailable = true;
+				break;
+			}
+    	  }
+      }
+      
     }
   }
 }
