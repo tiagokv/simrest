@@ -28,8 +28,10 @@ public class ProcessorSubsystem {
 			}
 		}
 	    
-	    Source source = new Source("Source", 86757.0, 0.19674); //não sei se ta certo
-	    Processor processor = new Processor("Processor", qttMachines, 110.5, 90.5);
+
+	    Source source = new Source("Source", 86757.0, 0.19674);
+	    Processor processor = new Processor("Processor", qttMachines, 90213.0, 0.18943);
+	    
 	    
 	    Sim_system.link_ports("Source", "Out", "Processor", "InCustomer");
 	    // Buffet buffet = new Buffet ...
@@ -49,7 +51,8 @@ public class ProcessorSubsystem {
 //					  paymMach.get_name(), paymMach.getOutProcessorPort().get_pname() );
 			
 		}
-
+	    
+	    Sim_system.generate_graphs(true);
 	    Sim_system.run();
     }
   }

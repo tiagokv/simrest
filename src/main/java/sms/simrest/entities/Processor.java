@@ -8,13 +8,14 @@ import eduni.simjava.Sim_port;
 import eduni.simjava.Sim_predicate;
 import eduni.simjava.Sim_stat;
 import eduni.simjava.Sim_system;
+import eduni.simjava.distributions.Sim_gamma_obj;
 import eduni.simjava.distributions.Sim_normal_obj;
 import eduni.simjava.distributions.Sim_random_obj;
 
 //The class for the processor
 public class Processor extends Sim_entity {
   private Sim_port in;
-  private Sim_normal_obj delay;
+  private Sim_gamma_obj delay;
 
   private ArrayList<PaymMachineConnection> portMachines;
   
@@ -35,10 +36,11 @@ public class Processor extends Sim_entity {
 	  }
   }
   
-  public Processor(String name, int qttMachines, double mean, double var) {
+  public Processor(String name, int qttMachines, double scale, double shape) {
     super(name);
     // Receive Customers from Source
     in = new Sim_port("InCustomer");
+    add_port(in);
     
     portMachines = new ArrayList<PaymMachineConnection>();
     for (int i = 0; i < qttMachines; i++) {
@@ -49,9 +51,10 @@ public class Processor extends Sim_entity {
 		add_port(port_out_machine);
 		portMachines.add( new PaymMachineConnection(i, port_in_machine, port_out_machine) );
 	}
-    
-    //Ticket is processed by this class
-    add_port(in);
+
+    delay = new Sim_gamma_obj("Gamma", scale, shape);
+    add_generator(delay);
+
   }
   
   public ArrayList<PaymMachineConnection> getPaymMachinePorts(){
@@ -64,7 +67,6 @@ public class Processor extends Sim_entity {
 
       //First gather all payment machine responses
       sim_select( new Sim_predicate() {
-		
 		@Override
 		public boolean match(Sim_event arg0) {
 			return !arg0.from_port(in); //is not a customer
@@ -81,11 +83,11 @@ public class Processor extends Sim_entity {
     				return ((Customer)arg0.get_data()).isTicket;
     			}
     			
-    			return true;
+    			return false;
     		}
           }, e);
           
-          if( e.get_tag() == -1){ //There was no ticket in queue
+          if( e.get_tag() == -1 && arePaymMachinesAvailable() ){ //There was no ticket in queue
         	  sim_get_next(e);
           }
       }
@@ -96,8 +98,8 @@ public class Processor extends Sim_entity {
     	  sim_trace(1, "Customer " + cust.id + " uses Ticket? " + cust.isTicket);
     	  
     	  if( cust.isTicket ){
-    		  //draw from probability
-    		  sim_pause(0.2);
+    		  sim_process(delay.sample());
+    		  sim_completed(e);
     	  }else{
     		  // Check paym. machines
     		  for (PaymMachineConnection paymMachineConnection : portMachines) {
@@ -120,5 +122,15 @@ public class Processor extends Sim_entity {
       }
       
     }
+    
+  }
+  
+  private boolean arePaymMachinesAvailable(){
+  	for (PaymMachineConnection paymMachineConnection : portMachines) {
+			if( paymMachineConnection.isAvailable ){
+				return true;
+			}
+		}
+  	return false;
   }
 }
