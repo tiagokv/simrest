@@ -55,7 +55,7 @@ public class PaymentMachine extends Sim_entity {
 				sim_trace(1, "Payment Machine " + get_name() + " is done with Customer " + ((Customer)e.get_data()).id);
 			
 			sim_schedule(out_processor, 0.0, 0);
-//			sim_schedule(out_buffet, 0, 0, e.get_data());
+			sim_schedule(out_buffet, 0, 0, e.get_data());
 		}
 	}
 

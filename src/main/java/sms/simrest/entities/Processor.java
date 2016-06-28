@@ -15,6 +15,7 @@ import eduni.simjava.distributions.Sim_random_obj;
 //The class for the processor
 public class Processor extends Sim_entity {
   private Sim_port in;
+  private Sim_port outBuffet;
   private Sim_gamma_obj delay;
 
   private ArrayList<PaymMachineConnection> portMachines;
@@ -42,6 +43,9 @@ public class Processor extends Sim_entity {
     in = new Sim_port("InCustomer");
     add_port(in);
     
+    outBuffet = new Sim_port("OutBuffet");
+    add_port(outBuffet);
+    
     portMachines = new ArrayList<PaymMachineConnection>();
     for (int i = 0; i < qttMachines; i++) {
     	Sim_port port_in_machine = new Sim_port(PREFIX_IN_MACHINE + i); // Will tell that the machine is available
@@ -64,34 +68,29 @@ public class Processor extends Sim_entity {
   public void body() {
     while (Sim_system.running()) {
       Sim_event e = new Sim_event();
-
-      //First gather all payment machine responses
-      sim_select( new Sim_predicate() {
-		@Override
-		public boolean match(Sim_event arg0) {
-			return !arg0.from_port(in); //is not a customer
-		}
-      }, e);
       
-      //No machine event was found
-      if( e.get_tag() == -1 ){
-          //Simulate priority queue, first Tickets then machine payments
-          sim_select( new Sim_predicate() {
-    		@Override
-    		public boolean match(Sim_event arg0) {
-    			if( arg0.get_data() instanceof Customer ){
-    				return ((Customer)arg0.get_data()).isTicket;
-    			}
-    			
-    			return false;
-    		}
-          }, e);
-          
-          if( e.get_tag() == -1 && arePaymMachinesAvailable() ){ //There was no ticket in queue
-        	  sim_get_next(e);
-          }
+      // If machines are available for access, first gather signals from machines or tickets, then ask for new customers
+      if( arePaymMachinesAvailable() ){
+	      sim_select( new Sim_predicate() {
+			@Override
+			public boolean match(Sim_event arg0) {
+				return !arg0.from_port(in) || (arg0.get_data() instanceof Customer && ((Customer)arg0.get_data()).isTicket); //is not a customer or it is and uses ticket
+			}
+	      }, e);
+	         
+	      if( e.get_tag() == -1 ){// && arePaymMachinesAvailable() ){ //There was no ticket in queue
+	    	  sim_get_next(e);
+	      }
+      }else{
+    	  sim_get_next( new Sim_predicate() {
+			@Override
+			public boolean match(Sim_event arg0) {
+				return !arg0.from_port(in) || (arg0.get_data() instanceof Customer && ((Customer)arg0.get_data()).isTicket); //is not a customer or it is and uses ticket
+			}
+		  }, e);
       }
       
+
       //Is a new customer coming?
       if( e.from_port(in) && e.get_data() != null && e.get_data() instanceof Customer ){
     	  Customer cust = (Customer) e.get_data();
@@ -100,6 +99,7 @@ public class Processor extends Sim_entity {
     	  if( cust.isTicket ){
     		  sim_process(delay.sample());
     		  sim_completed(e);
+    		  sim_schedule(outBuffet, 0.0, 0, cust);
     	  }else{
     		  // Check paym. machines
     		  for (PaymMachineConnection paymMachineConnection : portMachines) {
@@ -127,10 +127,10 @@ public class Processor extends Sim_entity {
   
   private boolean arePaymMachinesAvailable(){
   	for (PaymMachineConnection paymMachineConnection : portMachines) {
-			if( paymMachineConnection.isAvailable ){
-				return true;
-			}
+		if( paymMachineConnection.isAvailable ){
+			return true;
 		}
+	}
   	return false;
   }
 }

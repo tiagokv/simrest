@@ -32,11 +32,12 @@ public class ProcessorSubsystem {
 	    Source source = new Source("Source", 86757.0, 0.19674);
 	    Processor processor = new Processor("Processor", qttMachines, 90213.0, 0.18943);
 	    
+	    Sim_system.link_ports("Source", "Out", "Processor", "InCustomer");
+	    
 	    Buffet buffet = new Buffet("Buffet", qttPlaces);
 	    
+	    Sim_system.link_ports("Processor", "OutBuffet", "Buffet", "InCustomer");
 	    
-	    Sim_system.link_ports("Source", "Out", "Processor", "InCustomer");
-	    // Buffet buffet = new Buffet ...
 	    ArrayList<PaymentMachine> paymentMachines = new ArrayList<PaymentMachine>();
 	    for (int i = 0; i < qttMachines; i++) {
 	    	PaymentMachine paymMach = new PaymentMachine("PaymMachine" + i, 18212, 0.907);   	
@@ -49,8 +50,8 @@ public class ProcessorSubsystem {
 			Sim_system.link_ports(processor.get_name(), processor.getPaymMachinePorts().get(i).in.get_pname(), 
 								  paymMach.get_name(), paymMach.getOutProcessorPort().get_pname() );
 			
-//			Sim_system.link_ports(buffet.get_name(), buffet.getPaymMachinePorts().get(i).in.get_pname(), 
-//					  paymMach.get_name(), paymMach.getOutProcessorPort().get_pname() );
+			Sim_system.link_ports(paymMach.get_name(), paymMach.getOutBuffetPort().get_pname(), 
+								  "Buffet", "InCustomer");
 			
 		}
 	    
