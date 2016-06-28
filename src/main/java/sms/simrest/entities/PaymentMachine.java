@@ -25,7 +25,7 @@ public class PaymentMachine extends Sim_entity {
 		add_port(out_buffet);
 		add_port(out_processor);
 		
-		delay = new Sim_gamma_obj("NegExp_" + name, scale, shape);
+		delay = new Sim_gamma_obj("Gamma_" + name, scale, shape);
 		add_generator(delay);
 	}
 		
