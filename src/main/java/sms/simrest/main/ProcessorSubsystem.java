@@ -28,7 +28,7 @@ public class ProcessorSubsystem {
 			}
 		}
 	    
-	    Source source = new Source("Source", 0.19674, 86757.0); //não sei se ta certo
+	    Source source = new Source("Source", 86757.0, 0.19674); //não sei se ta certo
 	    Processor processor = new Processor("Processor", qttMachines, 110.5, 90.5);
 	    
 	    Sim_system.link_ports("Source", "Out", "Processor", "InCustomer");
