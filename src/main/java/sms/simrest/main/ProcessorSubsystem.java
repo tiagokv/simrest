@@ -17,14 +17,19 @@ public class ProcessorSubsystem {
 	    }
 	    
 	    int qttMachines = 2;
-	    int qttPlaces = 12;
+	    int qttBuffetPlaces = 12;
+	    int qttTablePlaces = 100;
 	    for (int i = 0; i < args.length; i++) {
 			if( args[i].equalsIgnoreCase("--machines") && args.length > i+1){
 				qttMachines = Integer.parseInt( args[i+1] );
 			}
 			
+			if( args[i].equalsIgnoreCase("--buffet") && args.length > i+1){
+				qttBuffetPlaces = Integer.parseInt( args[i+1] );
+			}
+			
 			if( args[i].equalsIgnoreCase("--places") && args.length > i+1){
-				qttPlaces = Integer.parseInt( args[i+1] );
+				qttTablePlaces = Integer.parseInt( args[i+1] );
 			}
 		}
 	    
@@ -34,9 +39,11 @@ public class ProcessorSubsystem {
 	    
 	    Sim_system.link_ports("Source", "Out", "Processor", "InCustomer");
 	    
-	    Buffet buffet = new Buffet("Buffet", qttPlaces);
+	    Buffet buffet = new Buffet("Buffet", qttBuffetPlaces);
 	    
 	    Sim_system.link_ports("Processor", "OutBuffet", "Buffet", "InCustomer");
+	    
+	    Table table = new Table("Table", qttTablePlaces);
 	    
 	    ArrayList<PaymentMachine> paymentMachines = new ArrayList<PaymentMachine>();
 	    for (int i = 0; i < qttMachines; i++) {
@@ -56,7 +63,7 @@ public class ProcessorSubsystem {
 		}
 	    
 	    ArrayList<BuffetPlace> buffetPlaces = new ArrayList<BuffetPlace>();
-	    for (int i = 0; i < qttPlaces; i++) {
+	    for (int i = 0; i < qttBuffetPlaces; i++) {
 	    	BuffetPlace buffetPlace = new BuffetPlace("BuffetPlace" + i, 107500.0, 1594963969.0);   	
 	    	
 	    	buffetPlaces.add(buffetPlace);
@@ -71,6 +78,25 @@ public class ProcessorSubsystem {
 //					  paymMach.get_name(), paymMach.getOutProcessorPort().get_pname() );
 			
 		}
+	    
+	    
+	    ArrayList<TablePlace> tablePlaces = new ArrayList<TablePlace>();
+	    for (int i = 0; i < qttTablePlaces; i++) {
+	    	TablePlace tablePlace = new TablePlace("TablePlace" + i, 1190500.0, 175460454400.0);   	
+	    	
+	    	tablePlaces.add(tablePlace);
+	    	
+			Sim_system.link_ports(table.get_name(), table.getTablePlacePorts().get(i).out.get_pname(), 
+					tablePlace.get_name(), tablePlace.getInPort().get_pname() );
+			
+			Sim_system.link_ports(table.get_name(), table.getTablePlacePorts().get(i).in.get_pname(), 
+					tablePlace.get_name(), tablePlace.getOutExitPort().get_pname() );
+			
+//			Sim_system.link_ports(buffet.get_name(), buffet.getPaymMachinePorts().get(i).in.get_pname(), 
+//					  paymMach.get_name(), paymMach.getOutProcessorPort().get_pname() );
+			
+		}
+	    
 	    
 	    Sim_system.generate_graphs(true);
 	    Sim_system.run();

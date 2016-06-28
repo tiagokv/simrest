@@ -66,7 +66,7 @@ public class Buffet extends Sim_entity {
 		}
       }, e);
       
-      if( e.get_tag() == -1 && areBuffetPlacseAvailable() ){
+      if( e.get_tag() == -1 && areBuffetPlacesAvailable() ){
     	  sim_get_next(e);
       }
       
@@ -98,7 +98,7 @@ public class Buffet extends Sim_entity {
     
   }
   
-  private boolean areBuffetPlacseAvailable(){
+  private boolean areBuffetPlacesAvailable(){
   	for (BuffetPlaceConnection buffetPlaceConnection : portPlaces) {
 			if( buffetPlaceConnection.isAvailable ){
 				return true;
