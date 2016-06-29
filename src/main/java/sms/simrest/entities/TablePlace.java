@@ -3,6 +3,7 @@ package sms.simrest.entities;
 import eduni.simjava.Sim_entity;
 import eduni.simjava.Sim_event;
 import eduni.simjava.Sim_port;
+import eduni.simjava.Sim_stat;
 import eduni.simjava.Sim_system;
 import eduni.simjava.distributions.Sim_normal_obj;
 
@@ -12,6 +13,7 @@ public class TablePlace extends Sim_entity {
 	private Sim_port out_table;
 	private Sim_port out_exit;
 	private Sim_normal_obj duration;
+	private Sim_stat stat;
 	
 	public TablePlace(String name, double mean, double variance) {
 		super(name);
@@ -26,6 +28,11 @@ public class TablePlace extends Sim_entity {
 		
 		duration = new Sim_normal_obj("launchDuration", mean, variance);
 	    add_generator(duration);
+	    
+		stat = new Sim_stat();
+		stat.add_measure(Sim_stat.THROUGHPUT);
+		stat.add_measure(Sim_stat.RESIDENCE_TIME);
+		set_stat(stat);
 	}
 		
 	public Sim_port getInPort() {

@@ -6,6 +6,7 @@ import eduni.simjava.Sim_entity;
 import eduni.simjava.Sim_event;
 import eduni.simjava.Sim_port;
 import eduni.simjava.Sim_predicate;
+import eduni.simjava.Sim_stat;
 import eduni.simjava.Sim_system;
 
 //The class for the processor
@@ -50,8 +51,7 @@ public class Table extends Sim_entity {
 		add_port(port_out_place);
 		portTablePlaces.add( new TablePlaceConnection(i, port_in_place, port_out_place) );
 	}
-    
-    
+
   }
   
   public ArrayList<Sim_port> getInPorts(){

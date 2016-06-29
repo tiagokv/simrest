@@ -17,6 +17,7 @@ public class Processor extends Sim_entity {
   private Sim_port in;
   private Sim_port outBuffet;
   private Sim_gamma_obj delay;
+  private Sim_stat stat;
 
   private ArrayList<PaymMachineConnection> portMachines;
   
@@ -59,6 +60,9 @@ public class Processor extends Sim_entity {
     delay = new Sim_gamma_obj("Gamma", scale, shape);
     add_generator(delay);
 
+	stat = new Sim_stat();
+	stat.add_measure(Sim_stat.QUEUE_LENGTH);
+	set_stat(stat);
   }
   
   public ArrayList<PaymMachineConnection> getPaymMachinePorts(){

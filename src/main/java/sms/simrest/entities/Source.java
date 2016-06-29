@@ -31,7 +31,7 @@ public class Source extends Sim_entity {
     }
 
     public void body() {
-      for (int i=0; i < 3; i++) {
+      for (int i=0; i < 100; i++) {
     	  
     	Customer customer = new Customer(i);
     	

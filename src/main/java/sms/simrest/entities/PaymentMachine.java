@@ -3,6 +3,7 @@ package sms.simrest.entities;
 import eduni.simjava.Sim_entity;
 import eduni.simjava.Sim_event;
 import eduni.simjava.Sim_port;
+import eduni.simjava.Sim_stat;
 import eduni.simjava.Sim_system;
 import eduni.simjava.distributions.Sim_gamma_obj;
 import eduni.simjava.distributions.Sim_negexp_obj;
@@ -13,6 +14,7 @@ public class PaymentMachine extends Sim_entity {
 	private Sim_port out_processor;
 	private Sim_port out_buffet;
 	private Sim_gamma_obj delay;
+	private Sim_stat stat;
 	
 	public PaymentMachine(String name, double scale, double shape) {
 		super(name);
@@ -27,6 +29,11 @@ public class PaymentMachine extends Sim_entity {
 		
 		delay = new Sim_gamma_obj("Gamma_" + name, scale, shape);
 		add_generator(delay);
+		
+		stat = new Sim_stat();
+		stat.add_measure(Sim_stat.THROUGHPUT);
+		stat.add_measure(Sim_stat.RESIDENCE_TIME);
+		set_stat(stat);
 	}
 		
 	public Sim_port getInPort() {
