@@ -10,9 +10,9 @@ import eduni.simjava.Sim_system;
 
 //The class for the processor
 public class Table extends Sim_entity {
-  private Sim_port in;
-
+  
   private ArrayList<TablePlaceConnection> portTablePlaces;
+  private ArrayList<Sim_port> inPorts;
   
   public final static String PREFIX_IN_TABLE = "In_TablePlace";
   public final static String PREFIX_OUT_TABLE = "Out_TablePlace";
@@ -31,11 +31,15 @@ public class Table extends Sim_entity {
 	  }
   }
   
-  public Table(String name, int qttTablePlaces) {
+  public Table(String name, int qttBuffetPlaces, int qttTablePlaces) {
     super(name);
-    // Receive Customers from Source
-    in = new Sim_port("InCustomer");
-    add_port(in);
+    
+    inPorts = new ArrayList<Sim_port>();
+    for (int i = 0; i < qttBuffetPlaces; i++) {
+    	Sim_port in = new Sim_port("InCustomer" + i);
+    	add_port(in);
+    	inPorts.add(in);
+	}  
     
     portTablePlaces = new ArrayList<TablePlaceConnection>();
     for (int i = 0; i < qttTablePlaces; i++) {
@@ -50,10 +54,23 @@ public class Table extends Sim_entity {
     
   }
   
+  public ArrayList<Sim_port> getInPorts(){
+	  return inPorts;
+  }
+  
   public ArrayList<TablePlaceConnection> getTablePlacePorts(){
 	  return portTablePlaces;
   }
 
+  private boolean doesEventComeFromInPorts(Sim_event event){
+	  for (Sim_port sim_port : inPorts) {
+		if( event.from_port(sim_port) ){
+			return true;
+		}
+	  }
+	  return false;
+  }
+  
   public void body() {
     while (Sim_system.running()) {
       Sim_event e = new Sim_event();
@@ -61,16 +78,16 @@ public class Table extends Sim_entity {
       if( areTablePlacesAvailable() ){
     	  sim_get_next(e);
       }else{
-    	  sim_get_next(new Sim_predicate() {
-    			@Override
-    			public boolean match(Sim_event arg0) {
-    				return !arg0.from_port(in); //is not a customer
-    			}
-    	      }, e);
+		  sim_get_next(new Sim_predicate() {
+				@Override
+				public boolean match(Sim_event arg0) {
+					return !doesEventComeFromInPorts(arg0); //is not a customer
+				}
+		      }, e);
       }
       
       //Is a new customer coming?
-      if( e.from_port(in) && e.get_data() != null && e.get_data() instanceof Customer ){
+      if( doesEventComeFromInPorts(e) && e.get_data() != null && e.get_data() instanceof Customer ){
     	  Customer cust = (Customer) e.get_data();
     	  
 		  // Check table places
@@ -78,6 +95,7 @@ public class Table extends Sim_entity {
 			  if( tablePlaceConnection.isAvailable ){
 				sim_trace(1,"Customer " + cust.id + " being sent to table place " + tablePlaceConnection.id);
 				sim_schedule(tablePlaceConnection.out, 0.0, 0, cust);
+				sim_completed(e);
 				tablePlaceConnection.isAvailable = false;
 				break;
 			  }
@@ -87,6 +105,7 @@ public class Table extends Sim_entity {
     	  for (TablePlaceConnection tablePlaceConnection : portTablePlaces) {
 			if(e.from_port(tablePlaceConnection.in)){ //If comes from this specific machine
 				sim_trace(1, "Signal received from TablePlace " + tablePlaceConnection.id);
+				sim_completed(e);
 				tablePlaceConnection.isAvailable = true;
 				break;
 			}

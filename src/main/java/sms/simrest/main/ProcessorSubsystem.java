@@ -33,17 +33,16 @@ public class ProcessorSubsystem {
 			}
 		}
 	    
-
 	    Source source = new Source("Source", 86757.0, 0.19674);
 	    Processor processor = new Processor("Processor", qttMachines, 90213.0, 0.18943);
 	    
 	    Sim_system.link_ports("Source", "Out", "Processor", "InCustomer");
 	    
-	    Buffet buffet = new Buffet("Buffet", qttBuffetPlaces);
+	    Buffet buffet = new Buffet("Buffet", qttMachines + 1, qttBuffetPlaces); //Plus one from ticket
 	    
-	    Sim_system.link_ports("Processor", "OutBuffet", buffet.get_name(), buffet.getInPort().get_pname());
+	    Sim_system.link_ports("Processor", "OutBuffet", buffet.get_name(), buffet.getInPorts().get(0).get_pname());
 	    
-	    Table table = new Table("Table", qttTablePlaces);
+	    Table table = new Table("Table", qttBuffetPlaces, qttTablePlaces);
 	    
 	    ArrayList<PaymentMachine> paymentMachines = new ArrayList<PaymentMachine>();
 	    for (int i = 0; i < qttMachines; i++) {
@@ -58,7 +57,7 @@ public class ProcessorSubsystem {
 								  paymMach.get_name(), paymMach.getOutProcessorPort().get_pname() );
 			
 			Sim_system.link_ports(paymMach.get_name(), paymMach.getOutBuffetPort().get_pname(), 
-								  buffet.get_name(), buffet.getInPort().get_pname());
+								  buffet.get_name(), buffet.getInPorts().get(i+1).get_pname());
 			
 		}
 	    
@@ -75,8 +74,7 @@ public class ProcessorSubsystem {
 					buffetPlace.get_name(), buffetPlace.getOutProcessorPort().get_pname() );
 			
 			Sim_system.link_ports(buffetPlace.get_name(), buffetPlace.getOutTabletPort().get_pname(), 
-								  "Table", "InCustomer");
-			
+								  table.get_name(), table.getInPorts().get(i).get_pname() );
 		}
 	    
 	    ArrayList<TablePlace> tablePlaces = new ArrayList<TablePlace>();
@@ -89,7 +87,7 @@ public class ProcessorSubsystem {
 					tablePlace.get_name(), tablePlace.getInPort().get_pname() );
 			
 			Sim_system.link_ports(table.get_name(), table.getTablePlacePorts().get(i).in.get_pname(), 
-					tablePlace.get_name(), tablePlace.getOutExitPort().get_pname() );
+					tablePlace.get_name(), tablePlace.getOutTablePort().get_pname() );
 
 		}
 	    

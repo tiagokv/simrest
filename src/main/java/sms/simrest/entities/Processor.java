@@ -105,6 +105,7 @@ public class Processor extends Sim_entity {
     		  for (PaymMachineConnection paymMachineConnection : portMachines) {
     			  if( paymMachineConnection.isAvailable ){
     				sim_trace(1,"Customer " + cust.id + " being sent to machine " + paymMachineConnection.id);
+    				sim_completed(e);
   					sim_schedule(paymMachineConnection.out, 0.0, 0, cust);
   					paymMachineConnection.isAvailable = false;
   					break;
@@ -115,6 +116,7 @@ public class Processor extends Sim_entity {
     	  for (PaymMachineConnection paymMachineConnection : portMachines) {
 			if(e.from_port(paymMachineConnection.in)){ //If comes from this specific machine
 				sim_trace(1, "Signal received from Machine " + paymMachineConnection.id);
+				sim_completed(e);
 				paymMachineConnection.isAvailable = true;
 				break;
 			}
