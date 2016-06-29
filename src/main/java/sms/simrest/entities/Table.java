@@ -14,6 +14,7 @@ public class Table extends Sim_entity {
   
   private ArrayList<TablePlaceConnection> portTablePlaces;
   private ArrayList<Sim_port> inPorts;
+  private Sim_stat stat;
   
   public final static String PREFIX_IN_TABLE = "In_TablePlace";
   public final static String PREFIX_OUT_TABLE = "Out_TablePlace";
@@ -51,7 +52,10 @@ public class Table extends Sim_entity {
 		add_port(port_out_place);
 		portTablePlaces.add( new TablePlaceConnection(i, port_in_place, port_out_place) );
 	}
-
+    
+	stat = new Sim_stat();
+	stat.add_measure(Sim_stat.QUEUE_LENGTH);
+	set_stat(stat);
   }
   
   public ArrayList<Sim_port> getInPorts(){

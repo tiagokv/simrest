@@ -7,6 +7,7 @@ import eduni.simjava.Sim_entity;
 import eduni.simjava.Sim_event;
 import eduni.simjava.Sim_port;
 import eduni.simjava.Sim_predicate;
+import eduni.simjava.Sim_stat;
 import eduni.simjava.Sim_system;
 
 //The class for the processor
@@ -14,6 +15,7 @@ public class Buffet extends Sim_entity {
 
   private ArrayList<BuffetPlaceConnection> portPlaces;
   private ArrayList<Sim_port> inPorts;
+  private Sim_stat stat;
   
   public final static String PREFIX_IN_PLACE = "In_BuffetPlace";
   public final static String PREFIX_OUT_PLACE = "Out_BuffetPlace";
@@ -52,6 +54,10 @@ public class Buffet extends Sim_entity {
 		add_port(port_out_place);
 		portPlaces.add( new BuffetPlaceConnection(i, port_in_place, port_out_place) );
 	}
+    
+	stat = new Sim_stat();
+	stat.add_measure(Sim_stat.QUEUE_LENGTH);
+	set_stat(stat);
     
   }
   
