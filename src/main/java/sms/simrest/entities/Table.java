@@ -58,16 +58,15 @@ public class Table extends Sim_entity {
     while (Sim_system.running()) {
       Sim_event e = new Sim_event();
 
-      //First gather all table places responses
-      sim_select( new Sim_predicate() {
-		@Override
-		public boolean match(Sim_event arg0) {
-			return !arg0.from_port(in); //is not a customer
-		}
-      }, e);
-      
-      if( e.get_tag() == -1 && areTablePlacesAvailable() ){
+      if( areTablePlacesAvailable() ){
     	  sim_get_next(e);
+      }else{
+    	  sim_get_next(new Sim_predicate() {
+    			@Override
+    			public boolean match(Sim_event arg0) {
+    				return !arg0.from_port(in); //is not a customer
+    			}
+    	      }, e);
       }
       
       //Is a new customer coming?
@@ -77,7 +76,7 @@ public class Table extends Sim_entity {
 		  // Check table places
 		  for (TablePlaceConnection tablePlaceConnection : portTablePlaces) {
 			  if( tablePlaceConnection.isAvailable ){
-				sim_trace(1,"Customer " + cust.id + " being sent to place " + tablePlaceConnection.id);
+				sim_trace(1,"Customer " + cust.id + " being sent to table place " + tablePlaceConnection.id);
 				sim_schedule(tablePlaceConnection.out, 0.0, 0, cust);
 				tablePlaceConnection.isAvailable = false;
 				break;

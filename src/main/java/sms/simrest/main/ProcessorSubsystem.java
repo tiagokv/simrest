@@ -41,7 +41,7 @@ public class ProcessorSubsystem {
 	    
 	    Buffet buffet = new Buffet("Buffet", qttBuffetPlaces);
 	    
-	    Sim_system.link_ports("Processor", "OutBuffet", "Buffet", "InCustomer");
+	    Sim_system.link_ports("Processor", "OutBuffet", buffet.get_name(), buffet.getInPort().get_pname());
 	    
 	    Table table = new Table("Table", qttTablePlaces);
 	    
@@ -58,7 +58,7 @@ public class ProcessorSubsystem {
 								  paymMach.get_name(), paymMach.getOutProcessorPort().get_pname() );
 			
 			Sim_system.link_ports(paymMach.get_name(), paymMach.getOutBuffetPort().get_pname(), 
-								  "Buffet", "InCustomer");
+								  buffet.get_name(), buffet.getInPort().get_pname());
 			
 		}
 	    
@@ -74,11 +74,10 @@ public class ProcessorSubsystem {
 			Sim_system.link_ports(buffet.get_name(), buffet.getBuffetPlacePorts().get(i).in.get_pname(), 
 					buffetPlace.get_name(), buffetPlace.getOutProcessorPort().get_pname() );
 			
-//			Sim_system.link_ports(buffet.get_name(), buffet.getPaymMachinePorts().get(i).in.get_pname(), 
-//					  paymMach.get_name(), paymMach.getOutProcessorPort().get_pname() );
+			Sim_system.link_ports(buffetPlace.get_name(), buffetPlace.getOutTabletPort().get_pname(), 
+								  "Table", "InCustomer");
 			
 		}
-	    
 	    
 	    ArrayList<TablePlace> tablePlaces = new ArrayList<TablePlace>();
 	    for (int i = 0; i < qttTablePlaces; i++) {
@@ -91,10 +90,7 @@ public class ProcessorSubsystem {
 			
 			Sim_system.link_ports(table.get_name(), table.getTablePlacePorts().get(i).in.get_pname(), 
 					tablePlace.get_name(), tablePlace.getOutExitPort().get_pname() );
-			
-//			Sim_system.link_ports(buffet.get_name(), buffet.getPaymMachinePorts().get(i).in.get_pname(), 
-//					  paymMach.get_name(), paymMach.getOutProcessorPort().get_pname() );
-			
+
 		}
 	    
 	    

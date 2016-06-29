@@ -34,7 +34,7 @@ public class Buffet extends Sim_entity {
   public Buffet(String name, int qttPlaces) {
     super(name);
     // Receive Customers from Source
-    in = new Sim_port("InCustomer");
+    in = new Sim_port(PREFIX_IN_PLACE + "InCustomer");
     add_port(in);
     
     portPlaces = new ArrayList<BuffetPlaceConnection>();
@@ -47,7 +47,10 @@ public class Buffet extends Sim_entity {
 		portPlaces.add( new BuffetPlaceConnection(i, port_in_place, port_out_place) );
 	}
     
-    
+  }
+  
+  public Sim_port getInPort(){
+	  return in;
   }
   
   public ArrayList<BuffetPlaceConnection> getBuffetPlacePorts(){
@@ -57,22 +60,25 @@ public class Buffet extends Sim_entity {
   public void body() {
     while (Sim_system.running()) {
       Sim_event e = new Sim_event();
-
-      //First gather all buffet places responses
-      sim_select( new Sim_predicate() {
-		@Override
-		public boolean match(Sim_event arg0) {
-			return !arg0.from_port(in); //is not a customer
-		}
-      }, e);
       
-      if( e.get_tag() == -1 && areBuffetPlacesAvailable() ){
+      if( areBuffetPlacesAvailable() ){
     	  sim_get_next(e);
+      }else{
+          //First gather all buffet places responses
+    	  sim_get_next(new Sim_predicate() {
+			@Override
+			public boolean match(Sim_event arg0) {
+				return !arg0.from_port(in); //is not a customer
+			}
+	      }, e);
       }
+      
+      sim_trace(1, "Event " + e.get_data() + " came from in? " + e.from_port(in) );
       
       //Is a new customer coming?
       if( e.from_port(in) && e.get_data() != null && e.get_data() instanceof Customer ){
     	  Customer cust = (Customer) e.get_data();
+    	  sim_trace(1, "Customer " + cust.id + " is serving food");
     	  
 		  // Check buffet places
 		  for (BuffetPlaceConnection buffetPlaceConnection : portPlaces) {

@@ -78,7 +78,7 @@ public class Processor extends Sim_entity {
 			}
 	      }, e);
 	         
-	      if( e.get_tag() == -1 ){// && arePaymMachinesAvailable() ){ //There was no ticket in queue
+	      if( e.get_tag() == -1 ){ //There was no ticket in queue
 	    	  sim_get_next(e);
 	      }
       }else{
