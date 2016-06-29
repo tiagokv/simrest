@@ -62,6 +62,9 @@ public class Processor extends Sim_entity {
 
 	stat = new Sim_stat();
 	stat.add_measure(Sim_stat.QUEUE_LENGTH);
+	stat.add_measure(Sim_stat.ARRIVAL_RATE);
+	stat.add_measure(Sim_stat.WAITING_TIME);
+	stat.measure_for(new int[] {0});
 	set_stat(stat);
   }
   

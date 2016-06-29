@@ -18,7 +18,7 @@ public class ProcessorSubsystem {
 	    
 	    int qttMachines = 2;
 	    int qttBuffetPlaces = 12;
-	    int qttTablePlaces = 100;
+	    int qttTablePlaces = 136;
 	    for (int i = 0; i < args.length; i++) {
 			if( args[i].equalsIgnoreCase("--machines") && args.length > i+1){
 				qttMachines = Integer.parseInt( args[i+1] );

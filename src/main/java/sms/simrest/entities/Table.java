@@ -55,6 +55,8 @@ public class Table extends Sim_entity {
     
 	stat = new Sim_stat();
 	stat.add_measure(Sim_stat.QUEUE_LENGTH);
+	stat.add_measure(Sim_stat.ARRIVAL_RATE);
+	stat.measure_for(new int[] {0});
 	set_stat(stat);
   }
   
