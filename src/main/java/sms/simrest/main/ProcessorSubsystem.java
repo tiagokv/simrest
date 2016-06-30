@@ -18,7 +18,8 @@ public class ProcessorSubsystem {
 	    
 	    int qttMachines = 2;
 	    int qttBuffetPlaces = 12;
-	    int qttTablePlaces = 136;
+	    int qttTablePlaces = 32;
+	    int qttCustomers = 200;
 	    for (int i = 0; i < args.length; i++) {
 			if( args[i].equalsIgnoreCase("--machines") && args.length > i+1){
 				qttMachines = Integer.parseInt( args[i+1] );
@@ -33,7 +34,7 @@ public class ProcessorSubsystem {
 			}
 		}
 	    
-	    Source source = new Source("Source", 86757.0, 0.19674);
+	    Source source = new Source("Source", qttCustomers, 86757.0, 0.19674);
 	    Processor processor = new Processor("Processor", qttMachines, 90213.0, 0.18943);
 	    
 	    Sim_system.link_ports("Source", "Out", "Processor", "InCustomer");

@@ -104,7 +104,8 @@ public class Processor extends Sim_entity {
     	  sim_trace(1, "Customer " + cust.id + " uses Ticket? " + cust.isTicket);
     	  
     	  if( cust.isTicket ){
-    		  sim_process(delay.sample());
+    		  double h = delay.sample();
+    		  sim_process((h<0)?0:h);
     		  sim_completed(e);
     		  sim_schedule(outBuffet, 0.0, 0, cust);
     	  }else{

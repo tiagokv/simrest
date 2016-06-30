@@ -54,7 +54,9 @@ public class BuffetPlace extends Sim_entity {
 			sim_get_next(e);
 			if(e.get_data() != null)
 				sim_trace(1, "Buffet Place " + get_name() + " received Customer " + ((Customer)e.get_data()).id);
-			sim_process(duration.sample()); // draw from probability
+			
+			double h = duration.sample();
+			sim_process((h<0)?0:h); // draw from probability
 			sim_completed(e);
 			
 			if(e.get_data() != null )

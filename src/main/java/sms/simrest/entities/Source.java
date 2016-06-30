@@ -12,9 +12,14 @@ public class Source extends Sim_entity {
     private Sim_gamma_obj delay;
     private Sim_random_obj random;
     private Sim_stat stat;
+    
+    private int qttCustomers;
 
-    public Source(String name, double scale, double shape) {
+    public Source(String name, int qttCustomers, double scale, double shape) {
       super(name);
+      
+      this.qttCustomers = qttCustomers;
+      
       // Port for sending events to the processor
       out = new Sim_port("Out");
       add_port(out);
@@ -31,7 +36,7 @@ public class Source extends Sim_entity {
     }
 
     public void body() {
-      for (int i=0; i < 100; i++) {
+      for (int i=0; i < qttCustomers; i++) {
     	  
     	Customer customer = new Customer(i);
     	
@@ -46,7 +51,8 @@ public class Source extends Sim_entity {
         // Send the processor a job
         sim_schedule(out, 0.0, 0, customer);
         // Pause
-        sim_pause(delay.sample());
+        double h = delay.sample();
+        sim_pause((h<0)?0:h);
       }
     }
   }
